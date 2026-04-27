@@ -1,73 +1,121 @@
-# React + TypeScript + Vite
+# A11y Checker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A WCAG 2.1 AA accessibility auditor powered by Claude AI. Paste HTML or enter a URL to get instant violation reports with severity ratings and diff-ready fix suggestions.
 
-Currently, two official plugins are available:
+**Live demo → [a11y-checker-gamma.vercel.app](https://a11y-checker-gamma.vercel.app)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![A11y Checker screenshot](./screenshot.png)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+- **Two input modes** — paste HTML directly or enter any public URL
+- **WCAG 2.1 AA coverage** — checks all four principles: Perceivable, Operable, Understandable, Robust
+- **Severity classification** — issues rated as critical, serious, moderate, or minor
+- **Diff-ready fixes** — every issue shows the broken snippet alongside the corrected replacement
+- **Overall grade** — A/B/C/F grade with a per-principle pass/fail breakdown
+- **Secure by design** — API key never touches the browser; all Claude calls go through a Vercel serverless function
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Layer | Technology |
+|---|---|
+| Frontend | React + TypeScript + Vite |
+| AI | Claude claude-sonnet-4-5 (Anthropic API) |
+| Backend | Vercel Serverless Functions |
+| Deployment | Vercel |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## Getting started locally
+
+### Prerequisites
+
+- Node.js 18+
+- An [Anthropic API key](https://console.anthropic.com)
+
+### Installation
+
+```bash
+git clone https://github.com/sinhapiya123/a11y-checker.git
+cd a11y-checker
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Environment setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the root:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+ANTHROPIC_API_KEY=your-key-here
+```
+
+### Run locally
+
+```bash
+npx vercel dev
+```
+
+Visit `http://localhost:3000`
+
+---
+
+## Project structure
+
+```
+a11y-checker/
+├── api/
+│   ├── audit.ts          # Serverless function — calls Claude API
+│   └── fetch-url.ts      # Serverless function — fetches URLs server-side
+├── src/
+│   ├── components/
+│   │   ├── AuditForm.tsx  # HTML paste / URL input
+│   │   ├── AuditResult.tsx# Grade, summary, issue list
+│   │   └── IssueCard.tsx  # Single issue with broken/fixed diff
+│   ├── lib/
+│   │   └── auditor.ts     # API call logic
+│   ├── types.ts           # Shared TypeScript types
+│   └── App.tsx
+├── .env.example
+└── vite.config.ts
+```
+
+---
+
+## How it works
+
+1. User pastes HTML or enters a URL
+2. If a URL is entered, `api/fetch-url.ts` fetches the page server-side (bypassing CORS)
+3. The HTML is sent to `api/audit.ts` which calls Claude with a structured WCAG audit prompt
+4. Claude returns a JSON audit report — grade, principle scores, and per-issue fixes
+5. The frontend renders the results with severity-coded issue cards
+
+---
+
+## Deploying your own instance
+
+1. Fork this repo
+2. Import it in [Vercel](https://vercel.com)
+3. Add `ANTHROPIC_API_KEY` in Project Settings → Environment Variables
+4. Deploy — done
+
+---
+
+## WCAG criteria covered
+
+The auditor checks for violations across all four WCAG 2.1 principles including missing alt text (1.1.1), insufficient color contrast (1.4.3), missing form labels (1.3.1), keyboard inaccessibility (2.1.1), missing focus indicators (2.4.7), invalid ARIA usage (4.1.2), missing language attribute (3.1.1), and more.
+
+---
+
+## Author
+
+**Piya Sinha** — [github.com/sinhapiya123](https://github.com/sinhapiya123)
+
+---
+
+## License
+
+MIT
