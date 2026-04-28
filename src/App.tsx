@@ -38,11 +38,19 @@ export default function App() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{
-            fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text3)',
-            background: 'var(--bg3)', border: '1px solid var(--border)',
-            padding: '3px 8px', borderRadius: 6,
-          }}>WCAG 2.1 AA</span>
+          <a
+            href="https://www.w3.org/TR/WCAG21/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text3)',
+              background: 'var(--bg3)', border: '1px solid var(--border)',
+              padding: '3px 8px', borderRadius: 6, textDecoration: 'none',
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border2)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text3)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)' }}
+          >WCAG 2.1 AA ↗</a>
           <a href="https://github.com/sinhapiya123/a11y-checker" target="_blank"
             style={{
               fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text3)',
@@ -58,7 +66,7 @@ export default function App() {
 
       {/* Hero */}
       <div style={{
-        padding: '72px 32px 56px',
+        padding: '32px 32px 28px',
         maxWidth: 720,
         margin: '0 auto',
         width: '100%',
@@ -74,21 +82,15 @@ export default function App() {
         </div>
 
         <h1 style={{
-          fontSize: 'clamp(32px, 5vw, 52px)',
+          fontSize: 'clamp(28px, 4vw, 44px)',
           fontWeight: 800,
           lineHeight: 1.1,
           letterSpacing: '-0.03em',
           marginBottom: 16,
-          background: 'linear-gradient(135deg, var(--text) 40%, var(--text2))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'var(--text)',
         }}>
-          Accessibility audits,<br />
-          <span style={{
-            background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>instant fixes.</span>
+          Accessibility audits,{' '}
+          <span style={{ color: 'var(--accent2)' }}>instant fixes.</span>
         </h1>
 
         <p style={{ fontSize: 17, color: 'var(--text2)', lineHeight: 1.7, maxWidth: 520, marginBottom: 48 }}>

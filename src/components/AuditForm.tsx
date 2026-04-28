@@ -94,11 +94,6 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
         />
       ) : (
         <div style={{ position: 'relative' }}>
-          <span style={{
-            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-            fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--text3)',
-            pointerEvents: 'none',
-          }}>https://</span>
           <input
             type="text"
             value={url}
@@ -106,8 +101,8 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             onKeyDown={e => e.key === 'Enter' && handleRun()}
-            placeholder="example.com"
-            style={{ ...inputStyles, paddingLeft: 80, resize: undefined }}
+            placeholder="https://example.com"
+            style={{ ...inputStyles, paddingLeft: 16, resize: undefined }}
           />
         </div>
       )}
