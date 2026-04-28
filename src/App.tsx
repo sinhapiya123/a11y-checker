@@ -8,6 +8,13 @@ export default function App() {
   const [result, setResult] = useState<AuditResultType | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next === 'light' ? 'light' : '')
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -20,7 +27,7 @@ export default function App() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'rgba(10,10,15,0.8)',
+        background: theme === 'dark' ? 'rgba(10,10,15,0.8)' : 'rgba(255,255,255,0.85)',
         backdropFilter: 'blur(12px)',
         position: 'sticky',
         top: 0,
@@ -33,11 +40,34 @@ export default function App() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: 'var(--mono)',
           }}>A</div>
-          <span style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em' }}>
+          <span style={{ fontFamily: 'var(--sans)', fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em', color: 'var(--text)' }}>
             a11y<span style={{ color: 'var(--accent)' }}>.</span>checker
           </span>
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            style={{
+              fontSize: 14,
+              background: 'var(--bg3)',
+              border: '1px solid var(--border)',
+              borderRadius: 6,
+              padding: '3px 8px',
+              cursor: 'pointer',
+              color: 'var(--text3)',
+              transition: 'color 0.15s, border-color 0.15s',
+              lineHeight: 1,
+            }}
+            onMouseEnter={e => { (e.currentTarget).style.color = 'var(--text)'; (e.currentTarget).style.borderColor = 'var(--border2)' }}
+            onMouseLeave={e => { (e.currentTarget).style.color = 'var(--text3)'; (e.currentTarget).style.borderColor = 'var(--border)' }}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+
           <a
             href="https://www.w3.org/TR/WCAG21/"
             target="_blank"
@@ -51,6 +81,7 @@ export default function App() {
             onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border2)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text3)'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)' }}
           >WCAG 2.1 AA ↗</a>
+
           <a href="https://github.com/sinhapiya123/a11y-checker" target="_blank"
             style={{
               fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text3)',
@@ -93,8 +124,7 @@ export default function App() {
           <span style={{ color: 'var(--accent2)' }}>instant fixes.</span>
         </h1>
 
-        <p style={{ fontSize: 17, color: 'var(--text2)', lineHeight: 1.7, maxWidth: 520, marginBottom: 48 }}>
-          Paste HTML or enter a URL — get a full WCAG 2.1 AA audit with severity ratings,
+        <p style={{ fontSize: 17, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 48, textAlign: 'center' }}>          Paste HTML or enter a URL — get a full WCAG 2.1 AA audit with severity ratings,
           affected user groups, and exact code fixes in seconds.
         </p>
 
