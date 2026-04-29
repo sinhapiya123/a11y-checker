@@ -1,23 +1,39 @@
+import { useState } from 'react'
 import type { AuditResult, Severity } from '../types'
 import IssueCard from './IssueCard'
 
 const GRADE_CONFIG: Record<string, { color: string; label: string; bg: string }> = {
-  A: { color: 'var(--minor)',    bg: 'rgba(107,203,119,0.08)', label: 'Excellent' },
-  B: { color: 'var(--serious)', bg: 'rgba(255,159,69,0.08)',  label: 'Needs work' },
+  A: { color: 'var(--minor)', bg: 'rgba(107,203,119,0.08)', label: 'Excellent' },
+  B: { color: 'var(--serious)', bg: 'rgba(255,159,69,0.08)', label: 'Needs work' },
   C: { color: 'var(--critical)', bg: 'rgba(255,92,92,0.08)', label: 'Poor' },
   F: { color: 'var(--critical)', bg: 'rgba(255,92,92,0.08)', label: 'Failing' },
 }
 
 const SEV_COLOR: Record<Severity, string> = {
   critical: 'var(--critical)',
-  serious:  'var(--serious)',
+  serious: 'var(--serious)',
   moderate: 'var(--moderate)',
-  minor:    'var(--minor)',
+  minor: 'var(--minor)',
 }
 
+const ALL_SEVERITIES: Severity[] = ['critical', 'serious', 'moderate', 'minor']
+
 export default function AuditResult({ result }: { result: AuditResult }) {
+  const [activeFilters, setActiveFilters] = useState<Severity[]>([...ALL_SEVERITIES])
   const g = GRADE_CONFIG[result.grade] ?? GRADE_CONFIG['F']
   const total = Object.values(result.summary).reduce((a, b) => a + b, 0)
+
+  function toggleFilter(sev: Severity) {
+    setActiveFilters(prev => {
+      // if only this severity is active, reset to all
+      if (prev.length === 1 && prev[0] === sev) return [...ALL_SEVERITIES]
+      // otherwise isolate this severity
+      return [sev]
+    })
+  }
+
+  const filtered = result.issues.filter(i => activeFilters.includes(i.severity))
+  const allActive = activeFilters.length === ALL_SEVERITIES.length
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -34,8 +50,6 @@ export default function AuditResult({ result }: { result: AuditResult }) {
 
       {/* Grade + Summary row */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-
-        {/* Grade card */}
         <div style={{
           background: g.bg,
           border: `1px solid ${g.color}33`,
@@ -53,7 +67,6 @@ export default function AuditResult({ result }: { result: AuditResult }) {
           </span>
         </div>
 
-        {/* Severity counts */}
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, minWidth: 200 }}>
           {(Object.entries(result.summary) as [Severity, number][]).map(([k, v]) => (
             <div key={k} style={{
@@ -96,29 +109,63 @@ export default function AuditResult({ result }: { result: AuditResult }) {
         ))}
       </div>
 
-      {/* Issues header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* Issues header + filters */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
-          {total} issue{total !== 1 ? 's' : ''} found
+          {filtered.length} of {total} issue{total !== 1 ? 's' : ''}
         </h2>
-        <span style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--text3)' }}>
-          click to expand/collapse
-        </span>
+
+        {/* Filter toggles */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setActiveFilters([...ALL_SEVERITIES])}
+            style={{
+              fontSize: 11, fontFamily: 'var(--mono)',
+              padding: '3px 10px', borderRadius: 6, cursor: 'pointer',
+              border: '1px solid var(--border)',
+              background: allActive ? 'var(--bg4)' : 'var(--bg2)',
+              color: allActive ? 'var(--text)' : 'var(--text3)',
+              transition: 'all 0.15s',
+            }}
+          >all</button>
+
+          {ALL_SEVERITIES.map(sev => {
+            const isActive = activeFilters.includes(sev) && !allActive
+            const count = result.summary[sev]
+            return (
+              <button
+                key={sev}
+                onClick={() => toggleFilter(sev)}
+                style={{
+                  fontSize: 11, fontFamily: 'var(--mono)',
+                  padding: '3px 10px', borderRadius: 6, cursor: 'pointer',
+                  border: `1px solid ${isActive ? SEV_COLOR[sev] : 'var(--border)'}`,
+                  background: isActive ? `${SEV_COLOR[sev]}18` : 'var(--bg2)',
+                  color: isActive ? SEV_COLOR[sev] : 'var(--text3)',
+                  transition: 'all 0.15s',
+                  opacity: count === 0 ? 0.35 : 1,
+                }}
+              >
+                {sev} ({count})
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Issue cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {result.issues.length === 0 ? (
+        {filtered.length === 0 ? (
           <div style={{
             padding: '32px', textAlign: 'center',
             background: 'var(--bg2)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)',
-            color: 'var(--pass)', fontFamily: 'var(--mono)', fontSize: 14,
+            color: 'var(--text3)', fontFamily: 'var(--mono)', fontSize: 13,
           }}>
-            ✓ No violations found
+            No {activeFilters.join(', ')} issues found
           </div>
         ) : (
-          result.issues.map(issue => <IssueCard key={issue.id} issue={issue} />)
+          filtered.map(issue => <IssueCard key={issue.id} issue={issue} />)
         )}
       </div>
     </div>
