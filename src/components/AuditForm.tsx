@@ -3,7 +3,7 @@ import { fetchHtmlFromUrl, runAudit } from '../lib/auditor'
 import type { AuditResult } from '../types'
 
 interface Props {
-  onResult: (r: AuditResult | null) => void
+  onResult: (r: AuditResult | null, label: string) => void
   onLoading: (v: boolean) => void
   onError: (e: string) => void
 }
@@ -23,12 +23,15 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
   async function handleRun() {
     onLoading(true)
     onError('')
-    onResult(null)
+    onResult(null, '')
     try {
-      const source = mode === 'url' ? await fetchHtmlFromUrl(normalizeUrl(url)) : html
+      const normalizedUrl = normalizeUrl(url)
+      const source = mode === 'url' ? await fetchHtmlFromUrl(normalizedUrl) : html
       if (!source.trim()) throw new Error('Nothing to audit — paste HTML or enter a URL.')
       const result = await runAudit(source)
-      onResult(result)
+      // label: use URL or first 60 chars of HTML
+      const label = mode === 'url' ? normalizedUrl : html.slice(0, 60).replace(/\n/g, ' ')
+      onResult(result, label)
     } catch (e: any) {
       onError(e.message)
     }
@@ -52,26 +55,15 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-      {/* Mode toggle */}
       <div style={{
-        display: 'inline-flex',
-        background: 'var(--bg3)',
-        border: '1px solid var(--border)',
-        borderRadius: 10,
-        padding: 3,
-        width: 'fit-content',
+        display: 'inline-flex', background: 'var(--bg3)',
+        border: '1px solid var(--border)', borderRadius: 10, padding: 3, width: 'fit-content',
       }}>
         {(['paste', 'url'] as const).map(m => (
           <button key={m} onClick={() => setMode(m)} style={{
-            padding: '6px 20px',
-            borderRadius: 8,
-            fontSize: 12,
-            fontFamily: 'var(--mono)',
-            fontWeight: 500,
-            cursor: 'pointer',
-            border: 'none',
-            transition: 'all 0.15s',
+            padding: '6px 20px', borderRadius: 8, fontSize: 12,
+            fontFamily: 'var(--mono)', fontWeight: 500, cursor: 'pointer',
+            border: 'none', transition: 'all 0.15s',
             background: mode === m ? 'var(--accent)' : 'transparent',
             color: mode === m ? '#fff' : 'var(--text3)',
             letterSpacing: '0.03em',
@@ -81,7 +73,6 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
         ))}
       </div>
 
-      {/* Input */}
       {mode === 'paste' ? (
         <textarea
           value={html}
@@ -93,40 +84,30 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
           style={inputStyles}
         />
       ) : (
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={e => e.key === 'Enter' && handleRun()}
-            placeholder="https://example.com"
-            style={{ ...inputStyles, paddingLeft: 16, resize: undefined }}
-          />
-        </div>
+        <input
+          type="text"
+          value={url}
+          onChange={e => setUrl(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          onKeyDown={e => e.key === 'Enter' && handleRun()}
+          placeholder="https://example.com"
+          style={{ ...inputStyles, resize: undefined }}
+        />
       )}
 
-      {/* Run button */}
       <button
         onClick={handleRun}
         style={{
-          padding: '14px 32px',
-          borderRadius: 'var(--radius)',
+          padding: '14px 32px', borderRadius: 'var(--radius)',
           background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-          color: '#fff',
-          border: 'none',
-          fontSize: 14,
-          fontFamily: 'var(--sans)',
-          fontWeight: 600,
-          cursor: 'pointer',
-          letterSpacing: '-0.01em',
-          transition: 'opacity 0.15s, transform 0.1s',
+          color: '#fff', border: 'none', fontSize: 14,
+          fontFamily: 'var(--sans)', fontWeight: 600, cursor: 'pointer',
+          letterSpacing: '-0.01em', transition: 'opacity 0.15s, transform 0.1s',
           alignSelf: 'flex-start',
         }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.9'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)' }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
-        onMouseDown={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0px)' }}
       >
         Run audit →
       </button>
