@@ -1,42 +1,48 @@
 import { useState } from 'react'
 import type { AuditResult, Severity } from '../types'
 import IssueCard from './IssueCard'
+import { exportAuditPdf } from '../lib/exportPdf'
 
 const GRADE_CONFIG: Record<string, { color: string; label: string; bg: string }> = {
-  A: { color: 'var(--minor)', bg: 'rgba(107,203,119,0.08)', label: 'Excellent' },
-  B: { color: 'var(--serious)', bg: 'rgba(255,159,69,0.08)', label: 'Needs work' },
+  A: { color: 'var(--minor)',    bg: 'rgba(107,203,119,0.08)', label: 'Excellent' },
+  B: { color: 'var(--serious)', bg: 'rgba(255,159,69,0.08)',  label: 'Needs work' },
   C: { color: 'var(--critical)', bg: 'rgba(255,92,92,0.08)', label: 'Poor' },
   F: { color: 'var(--critical)', bg: 'rgba(255,92,92,0.08)', label: 'Failing' },
 }
 
 const SEV_COLOR: Record<Severity, string> = {
   critical: 'var(--critical)',
-  serious: 'var(--serious)',
+  serious:  'var(--serious)',
   moderate: 'var(--moderate)',
-  minor: 'var(--minor)',
+  minor:    'var(--minor)',
 }
 
 const ALL_SEVERITIES: Severity[] = ['critical', 'serious', 'moderate', 'minor']
 
 export default function AuditResult({ result }: { result: AuditResult }) {
   const [activeFilters, setActiveFilters] = useState<Severity[]>([...ALL_SEVERITIES])
+  const [exporting, setExporting] = useState(false)
   const g = GRADE_CONFIG[result.grade] ?? GRADE_CONFIG['F']
   const total = Object.values(result.summary).reduce((a, b) => a + b, 0)
 
   function toggleFilter(sev: Severity) {
     setActiveFilters(prev => {
-      // if only this severity is active, reset to all
       if (prev.length === 1 && prev[0] === sev) return [...ALL_SEVERITIES]
-      // otherwise isolate this severity
       return [sev]
     })
+  }
+
+  async function handleExport() {
+    setExporting(true)
+    await exportAuditPdf('audit-result', 'a11y-audit-report.pdf')
+    setExporting(false)
   }
 
   const filtered = result.issues.filter(i => activeFilters.includes(i.severity))
   const allActive = activeFilters.length === ALL_SEVERITIES.length
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div id="audit-result" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* Divider */}
       <div style={{
@@ -109,14 +115,32 @@ export default function AuditResult({ result }: { result: AuditResult }) {
         ))}
       </div>
 
-      {/* Issues header + filters */}
+      {/* Issues header + filters + export */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
         <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
           {filtered.length} of {total} issue{total !== 1 ? 's' : ''}
         </h2>
 
-        {/* Filter toggles */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+
+          {/* Export button */}
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            style={{
+              fontSize: 11, fontFamily: 'var(--mono)',
+              padding: '3px 10px', borderRadius: 6, cursor: exporting ? 'not-allowed' : 'pointer',
+              border: '1px solid var(--accent)',
+              background: 'var(--accent-glow)',
+              color: 'var(--accent2)',
+              opacity: exporting ? 0.6 : 1,
+              transition: 'all 0.15s',
+            }}
+          >
+            {exporting ? 'exporting...' : '↓ export pdf'}
+          </button>
+
+          {/* Filter toggles */}
           <button
             onClick={() => setActiveFilters([...ALL_SEVERITIES])}
             style={{
