@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { fetchHtmlFromUrl, runAudit } from '../lib/auditor'
 import type { AuditResult } from '../types'
 
@@ -37,6 +37,17 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
     }
     onLoading(false)
   }
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault()
+        handleRun()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [html, url, mode])
 
   const inputStyles: React.CSSProperties = {
     width: '100%',
@@ -111,6 +122,11 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
       >
         Run audit →
       </button>
+      <span style={{
+        fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--text3)', marginTop: 4,
+      }}>
+        or press ⌘ + Enter
+      </span>
     </div>
   )
 }
