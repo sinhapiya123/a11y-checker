@@ -3,6 +3,7 @@ import AuditForm from './components/AuditForm'
 import AuditResult from './components/AuditResult'
 import type { AuditResult as AuditResultType } from './types'
 import './index.css'
+import confetti from 'canvas-confetti'
 
 interface HistoryEntry {
   id: string
@@ -260,7 +261,17 @@ export default function App() {
           onResult={(r, label) => {
             setResult(r)
             setError('')
-            if (r) saveToHistory(r, label)
+            if (r) {
+              saveToHistory(r, label)
+              if (r.grade === 'A') {
+                confetti({
+                  particleCount: 120,
+                  spread: 80,
+                  origin: { y: 0.6 },
+                  colors: ['#7c6af7', '#a594ff', '#6bcb77', '#4ea8de', '#ffffff'],
+                })
+              }
+            }
           }}
           onLoading={setLoading}
           onError={setError}
