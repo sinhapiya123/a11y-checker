@@ -4,6 +4,7 @@ import AuditResult from './components/AuditResult'
 import type { AuditResult as AuditResultType } from './types'
 import './index.css'
 import confetti from 'canvas-confetti'
+import { encodeResult, decodeResult } from './lib/auditor'
 
 interface HistoryEntry {
   id: string
@@ -22,12 +23,22 @@ export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('a11y-history')
       if (saved) setHistory(JSON.parse(saved))
     } catch { }
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const shared = params.get('result')
+    if (shared) {
+      const decoded = decodeResult(shared)
+      if (decoded) setResult(decoded)
+    }
   }, [])
 
   function toggleTheme() {
@@ -295,6 +306,30 @@ export default function App() {
           maxWidth: 720, margin: '0 auto', width: '100%',
           padding: '0 32px 80px', animation: 'fadeUp 0.4s ease both',
         }}>
+          {/* Share button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button
+              onClick={() => {
+                const encoded = encodeResult(result)
+                const url = `${window.location.origin}?result=${encoded}`
+                navigator.clipboard.writeText(url).then(() => {
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                })
+              }}
+              style={{
+                fontSize: 11, fontFamily: 'var(--mono)',
+                padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+                border: '1px solid var(--border)',
+                background: copied ? 'rgba(107,203,119,0.1)' : 'var(--bg3)',
+                color: copied ? 'var(--minor)' : 'var(--text3)',
+                transition: 'all 0.15s',
+              }}
+            >
+              {copied ? '✓ link copied!' : '↗ share results'}
+            </button>
+          </div>
+
           <AuditResult result={result} />
         </div>
       )}
