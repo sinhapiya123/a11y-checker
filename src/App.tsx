@@ -268,6 +268,63 @@ export default function App() {
           affected user groups, and exact code fixes in seconds.
         </p>
 
+        {/* Info section */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 10, marginBottom: 36,
+        }}>
+          {[
+            {
+              icon: '👁',
+              title: 'Perceivable',
+              items: ['Missing alt text', 'Color contrast < 4.5:1', 'Missing captions', 'Non-adaptable content'],
+            },
+            {
+              icon: '⌨️',
+              title: 'Operable',
+              items: ['Keyboard inaccessibility', 'Missing focus indicators', 'No skip links', 'Seizure risks'],
+            },
+            {
+              icon: '💬',
+              title: 'Understandable',
+              items: ['Missing form labels', 'Unclear error messages', 'Missing language attr', 'Inconsistent navigation'],
+            },
+            {
+              icon: '🔧',
+              title: 'Robust',
+              items: ['Invalid ARIA usage', 'Deprecated HTML', 'Missing landmarks', 'Roles without children'],
+            },
+          ].map(section => (
+            <div key={section.title} style={{
+              background: 'var(--bg2)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              padding: '14px 16px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 16 }}>{section.icon}</span>
+                <span style={{
+                  fontSize: 13, fontWeight: 600, color: 'var(--accent2)',
+                  fontFamily: 'var(--mono)',
+                }}>{section.title}</span>
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {section.items.map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{
+                      width: 4, height: 4, borderRadius: '50%',
+                      background: 'var(--text3)', flexShrink: 0,
+                    }} />
+                    <span style={{ fontSize: 12, color: 'var(--text2)', fontFamily: 'var(--mono)' }}>
+                      {item}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
         <AuditForm
           onResult={(r, label) => {
             setResult(r)

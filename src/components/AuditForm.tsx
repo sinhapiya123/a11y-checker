@@ -24,17 +24,50 @@ export default function AuditForm({ onResult, onLoading, onError }: Props) {
     onLoading(true)
     onError('')
     onResult(null, '')
+
     try {
+      // Validate input before running
+      if (mode === 'url') {
+        const trimmed = url.trim()
+        if (!trimmed) throw new Error('Please enter a URL to audit.')
+
+        // Check if user pasted HTML into URL field
+        if (trimmed.startsWith('<') || trimmed.includes('</')) {
+          throw new Error('Looks like you pasted HTML — switch to the "paste html" tab instead.')
+        }
+      }
+
+      if (mode === 'paste') {
+        const trimmed = html.trim()
+        if (!trimmed) throw new Error('Please paste some HTML to audit.')
+
+        // Check if user pasted a URL into HTML field
+        if (/^https?:\/\//i.test(trimmed) || /^www\./i.test(trimmed)) {
+          throw new Error('Looks like you entered a URL — switch to the "enter url" tab instead.')
+        }
+      }
+
       const normalizedUrl = normalizeUrl(url)
       const source = mode === 'url' ? await fetchHtmlFromUrl(normalizedUrl) : html
       if (!source.trim()) throw new Error('Nothing to audit — paste HTML or enter a URL.')
+
       const result = await runAudit(source)
-      // label: use URL or first 60 chars of HTML
       const label = mode === 'url' ? normalizedUrl : html.slice(0, 60).replace(/\n/g, ' ')
       onResult(result, label)
     } catch (e: any) {
-      onError(e.message)
+      // Map technical errors to friendly messages
+      const msg: string = e.message ?? ''
+      if (msg.includes('Unterminated string') || msg.includes('JSON')) {
+        onError('The page returned too much content to parse. Try a smaller HTML snippet using the "paste html" tab instead.')
+      } else if (msg.includes('Internal Server Error')) {
+        onError('Could not fetch that URL — the server blocked the request. Try pasting the page\'s HTML directly using the "paste html" tab.')
+      } else if (msg.includes('Failed to fetch URL')) {
+        onError('Could not reach that URL. Check that it\'s public and try again.')
+      } else {
+        onError(msg)
+      }
     }
+
     onLoading(false)
   }
 
