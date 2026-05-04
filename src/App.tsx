@@ -243,14 +243,6 @@ export default function App() {
         padding: '32px 32px 28px', maxWidth: 720, margin: '0 auto',
         width: '100%', animation: 'fadeUp 0.5s ease both',
       }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: 'var(--accent-glow)', border: '1px solid rgba(124,106,247,0.3)',
-          borderRadius: 20, padding: '4px 12px', marginBottom: 24,
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', animation: 'pulse-ring 2s infinite' }} />
-          <span style={{ fontSize: 12, fontFamily: 'var(--mono)', color: 'var(--accent2)' }}>Powered by Claude AI</span>
-        </div>
 
         <h1 style={{
           fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800,
